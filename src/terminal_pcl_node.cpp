@@ -49,7 +49,7 @@ TerminalPCLNode::TerminalPCLNode(const rclcpp::NodeOptions & options)
     std::string topic = this->get_parameter("topic").as_string();
 
     sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-        topic, 10, [this](const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
+        topic, rclcpp::SensorDataQoS(), [this](const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
             this->callback(msg);
         });
 
