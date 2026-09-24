@@ -210,7 +210,6 @@ Element Visualizer::render_frame() {
         }
     }
 
-    bool teleop = node_->is_teleop_enabled();
     return vbox({
         hbox({
             text(" 3D VISUALIZER ") | bold | color(Color::Yellow),
@@ -219,14 +218,12 @@ Element Visualizer::render_frame() {
             filler(),
             text(cm ? "[CAMERA]" : "[ROBOT]") | bold | color(Color::Magenta),
             filler(),
-            text(teleop ? " [TELEOP:ON] " : " [TELEOP:OFF] ") | bold | color(teleop ? Color::Green : Color::Red),
-            filler(),
             text(" Pts: " + std::to_string(data->points.size())) | color(Color::Green)
         }),
         separator(),
         canvas(std::move(c)) | hcenter | flex | border,
         hbox({
-            text(" [WASD] Orbit | [ARROWS] Pan | [U-O/J-L] Teleop | [[] Splat- | []] Splat+ ") | dim,
+            text(" [WASD] Orbit | [ARROWS] Pan | [[] Splat- | []] Splat+ ") | dim,
             filler(),
             text(quit_flag_ ? " EXITING... " : "") | bold | color(Color::Red)
         })
@@ -235,20 +232,6 @@ Element Visualizer::render_frame() {
 
 bool Visualizer::handle_event(Event event) {
     if (event == Event::Character('q') || event == Event::Escape) { quit_flag_ = true; screen_.Exit(); return true; }
-
-    // Teleop logic (similar to teleop_twist_keyboard)
-    if (event == Event::Character('i')) { node_->send_command(lin_vel_, 0.0); return true; }
-    if (event == Event::Character('u')) { node_->send_command(lin_vel_, ang_vel_); return true; }
-    if (event == Event::Character('o')) { node_->send_command(lin_vel_, -ang_vel_); return true; }
-    if (event == Event::Character('j')) { node_->send_command(0.0, ang_vel_); return true; }
-    if (event == Event::Character('l')) { node_->send_command(0.0, -ang_vel_); return true; }
-    if (event == Event::Character('k')) { node_->send_command(0.0, 0.0); return true; }
-    if (event == Event::Character('m')) { node_->send_command(-lin_vel_, -ang_vel_); return true; }
-    if (event == Event::Character(',')) { node_->send_command(-lin_vel_, 0.0); return true; }
-    if (event == Event::Character('.')) { node_->send_command(-lin_vel_, ang_vel_); return true; }
-
-    if (event == Event::Character('y')) { lin_vel_ *= 1.1; ang_vel_ *= 1.1; return true; }
-    if (event == Event::Character('h')) { lin_vel_ *= 0.9; ang_vel_ *= 0.9; return true; }
 
     // Camera Panning/Translation
     if (event == Event::ArrowUp)    { cam_z_ = cam_z_.load() + 0.2f; return true; }

@@ -9,7 +9,6 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 
 # Fetch FTXUI
 include(FetchContent)
@@ -32,7 +31,6 @@ target_compile_features(visualizer_node PUBLIC cxx_std_17)
 ament_target_dependencies(visualizer_node
   rclcpp
   sensor_msgs
-  geometry_msgs
 )
 
 target_link_libraries(visualizer_node

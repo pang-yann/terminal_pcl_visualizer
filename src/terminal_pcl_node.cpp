@@ -43,23 +43,15 @@ namespace terminal_pcl_visualizer {
 TerminalPCLNode::TerminalPCLNode(const rclcpp::NodeOptions & options)
 : Node("terminal_pcl_visualizer", options) {
     this->declare_parameter("topic", "/points");
-    this->declare_parameter("cmd_vel_topic", "/cmd_vel");
     this->declare_parameter("max_points", 20000);
-    this->declare_parameter("enable_teleop", false);
 
     std::string topic = this->get_parameter("topic").as_string();
-    std::string cmd_topic = this->get_parameter("cmd_vel_topic").as_string();
-    publish_cmd_vel_ = this->get_parameter("enable_teleop").as_bool();
 
     sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
         topic, 10, [this](const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
             this->callback(msg);
         });
-    
-    if (publish_cmd_vel_) {
-        cmd_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(cmd_topic, 10);
-    }
-    
+
     data_ = std::make_shared<CloudData>();
     data_->frame_id = "waiting...";
 }
@@ -67,14 +59,6 @@ TerminalPCLNode::TerminalPCLNode(const rclcpp::NodeOptions & options)
 std::shared_ptr<CloudData> TerminalPCLNode::get_data() {
     std::lock_guard<std::mutex> lock(mtx_);
     return data_;
-}
-
-void TerminalPCLNode::send_command(double linear_x, double angular_z) {
-    if (!publish_cmd_vel_ || !cmd_pub_) return;
-    auto msg = geometry_msgs::msg::Twist();
-    msg.linear.x = linear_x;
-    msg.angular.z = angular_z;
-    cmd_pub_->publish(msg);
 }
 
 void TerminalPCLNode::callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) {

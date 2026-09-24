@@ -1,6 +1,6 @@
 # Terminal PCL Visualizer
 
-A high-performance, real-time 3D Point Cloud visualizer for your terminal. Built with ROS 2 and [FTXUI](https://github.com/ArthurSonzogni/ftxui), it allows you to visualize point clouds and control robots directly from your CLI with near-zero latency.
+A high-performance, real-time 3D Point Cloud visualizer for your terminal. Built with ROS 2 and [FTXUI](https://github.com/ArthurSonzogni/ftxui), it allows you to visualize point clouds directly from your CLI.
 
 ![alt text](image.png)
 
@@ -8,7 +8,6 @@ A high-performance, real-time 3D Point Cloud visualizer for your terminal. Built
 
 -   **High-Density 3D Rendering**: Real-time projection of point clouds using Braille characters for maximum resolution.
 -   **Adaptive Splatting**: Dynamically fills gaps in sparse point clouds based on depth to provide a solid scene structure from all angles.
--   **Integrated Teleop**: Built-in keyboard teleoperation (compatible with `teleop_twist_keyboard` layout).
 -   **Z-Buffering**: Correct depth occlusion ensures closer points properly hide points behind them.
 -   **Full-Screen Adaptive UI**: Automatically scales the 3D canvas to fit your terminal window.
 -   **Zero-Latency Performance**: Optimized C++ rendering pipeline with pre-calculated trigonometry and memory-efficient buffering.
@@ -18,7 +17,7 @@ A high-performance, real-time 3D Point Cloud visualizer for your terminal. Built
 ### Prerequisites
 -   ROS 2 (Humble or newer recommended)
 -   C++17 compiler
--   `sensor_msgs`, `geometry_msgs`, `rclcpp`
+-   `sensor_msgs`, `rclcpp`
 
 ### Build
 ```bash
@@ -39,12 +38,10 @@ ros2 run terminal_pcl_visualizer visualizer_node
 ### Parameters
 -   `topic`: The PointCloud2 topic to subscribe to (default: `/points`).
 -   `max_points`: Maximum points to render per frame for performance (default: `20000`).
--   `enable_teleop`: Enable `/cmd_vel` publishing (default: `false`).
--   `cmd_vel_topic`: The topic for teleop commands (default: `/cmd_vel`).
 
-Example with teleop enabled:
+Example using a camera point cloud topic:
 ```bash
-ros2 run terminal_pcl_visualizer visualizer_node --ros-args -p enable_teleop:=true -p topic:=/camera/points
+ros2 run terminal_pcl_visualizer visualizer_node --ros-args -p topic:=/camera/points
 ```
 
 ## Controls
@@ -61,14 +58,6 @@ ros2 run terminal_pcl_visualizer visualizer_node --ros-args -p enable_teleop:=tr
 | **1 / 2 / 3**| Camera Presets (front / side / top) |
 | **R** | Reset Camera & Splatting |
 | **C** | Toggle Camera Mode |
-
-### Robot Teleop (if enabled)
-| Key | Action |
-| :--- | :--- |
-| **U / I / O** | Forward-Left / Forward / Forward-Right |
-| **J / K / L** | Spin Left / Stop / Spin Right |
-| **M / , / .** | Backward-Left / Backward / Backward-Right |
-| **Y / H** | Increase / Decrease Speed |
 
 ### Visual Quality
 | Key | Action |

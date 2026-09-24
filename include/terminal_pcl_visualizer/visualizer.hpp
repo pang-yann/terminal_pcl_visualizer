@@ -79,8 +79,6 @@ private:
     std::atomic<float> zoom_{350.0f};
     std::atomic<bool> cam_mode_{true};
 
-    float lin_vel_ = 0.5f;
-    float ang_vel_ = 1.0f;
     float splat_multiplier_ = 1.0f;
 
     std::vector<float> z_buffer_;
