@@ -37,6 +37,7 @@
 #include "sensor_msgs/point_cloud2_iterator.hpp"
 #include <algorithm>
 #include <cmath>
+#include <exception>
 
 namespace terminal_pcl_visualizer {
 
@@ -65,8 +66,26 @@ void TerminalPCLNode::callback(const sensor_msgs::msg::PointCloud2::SharedPtr ms
     auto next = std::make_shared<CloudData>();
     next->frame_id = msg->header.frame_id;
 
-    size_t max_p = static_cast<size_t>(this->get_parameter("max_points").as_int());
+    const auto max_points = this->get_parameter("max_points").as_int();
+    if (max_points <= 0) {
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+            "Ignoring point cloud because max_points must be positive (got %lld)",
+            static_cast<long long>(max_points));
+        return;
+    }
+
+    const size_t max_p = static_cast<size_t>(max_points);
     size_t total_p = static_cast<size_t>(msg->width) * msg->height;
+
+    const size_t minimum_row_size = static_cast<size_t>(msg->width) * msg->point_step;
+    const size_t expected_data_size = static_cast<size_t>(msg->row_step) * msg->height;
+    if (msg->row_step < minimum_row_size || msg->data.size() < expected_data_size) {
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+            "Ignoring malformed PointCloud2: width=%u height=%u point_step=%u row_step=%u data_size=%zu (need row_step >= %zu and data_size >= %zu)",
+            msg->width, msg->height, msg->point_step, msg->row_step, msg->data.size(),
+            minimum_row_size, expected_data_size);
+        return;
+    }
     
     try {
         sensor_msgs::PointCloud2ConstIterator<float> it_x(*msg, "x");
@@ -99,8 +118,19 @@ void TerminalPCLNode::callback(const sensor_msgs::msg::PointCloud2::SharedPtr ms
             next->cx = sx / next->points.size();
             next->cy = sy / next->points.size();
             next->cz = sz / next->points.size();
+        } else if (total_p > 0) {
+            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                "PointCloud2 has %zu points but none contain finite x/y/z values", total_p);
         }
-    } catch (...) {}
+    } catch (const std::exception & error) {
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+            "Failed to read PointCloud2 x/y/z fields: %s", error.what());
+        return;
+    } catch (...) {
+        RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+            "Failed to read PointCloud2 x/y/z fields due to an unknown error");
+        return;
+    }
 
     {
         std::lock_guard<std::mutex> lock(mtx_);
